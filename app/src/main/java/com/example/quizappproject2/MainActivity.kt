@@ -1,5 +1,7 @@
 package com.example.quizappproject2
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -42,6 +44,19 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+fun saveUserScore(context: Context, score: Int) {
+    val sharedPreferences: SharedPreferences = context.getSharedPreferences("quizAppPrefs", Context.MODE_PRIVATE)
+    with(sharedPreferences.edit()) {
+        putInt("userScore", score)
+        apply()
+    }
+}
+
+fun getUserScore(context: Context): Int {
+    val sharedPreferences: SharedPreferences = context.getSharedPreferences("quizAppPrefs", Context.MODE_PRIVATE)
+    return sharedPreferences.getInt("userScore", 0) // Default score is 0 if no value is found
+}
+
 
 @Composable
 fun SplashScreen(navController: NavController) {
@@ -116,6 +131,9 @@ fun LoginScreen(navController: NavController) {
         TextButton(onClick = { navController.navigate("register") }) {
             Text("Register")
         }
+        val storedScore = getUserScore(context)
+        Text("Last score: $storedScore", style = MaterialTheme.typography.bodyMedium)
+
     }
 }
 
@@ -322,7 +340,9 @@ fun QuizScreen(navController: NavController) {
                     currentQuestionIndex++
                     showConfirmationDialog = false
 
-                    if (currentQuestionIndex == questions.size) {
+                    if (currentQuestionIndex == questions.size)
+                    {
+                        saveUserScore(context, score)
                         Toast.makeText(context, "Quiz finished! Your score: $score/${questions.size}", Toast.LENGTH_SHORT).show()
                         navController.navigate("rules")
                     }
